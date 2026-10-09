@@ -65,8 +65,12 @@ export async function loginController(
     const { email, password } = parsed.data;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || user.password !== password) {
-      sendError(res, 401, 'UNAUTHORIZED', 'Invalid email or password');
+    if (!user) {
+      sendError(res, 404, 'NOT_FOUND', 'User not registered. Please sign up first.');
+      return;
+    }
+    if (user.password !== password) {
+      sendError(res, 401, 'UNAUTHORIZED', 'Incorrect password.');
       return;
     }
 

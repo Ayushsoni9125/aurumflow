@@ -34,15 +34,14 @@ export default function Header() {
           </Link>
 
           <nav className="flex items-center gap-6">
-            <Link 
-              to="/apply" 
-              className={`text-sm font-medium transition-colors ${location.pathname === '/apply' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
-            >
-              Apply
-            </Link>
-            
             {isAuthenticated ? (
               <>
+                <Link 
+                  to="/apply" 
+                  className={`text-sm font-medium transition-colors ${location.pathname === '/apply' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
+                >
+                  Apply
+                </Link>
                 <Link 
                   to="/admin" 
                   className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}

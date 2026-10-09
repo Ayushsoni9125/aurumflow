@@ -17,10 +17,10 @@ function App() {
         <main className="flex-1 flex flex-col pt-8 pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/apply" element={<ApplicationFlow />} />
             
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/apply" element={<ApplicationFlow />} />
               <Route path="/admin" element={<AdminDashboard />} />
             </Route>
 

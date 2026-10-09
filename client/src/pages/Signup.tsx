@@ -38,22 +38,22 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md card p-8">
-        <div className="flex justify-center mb-6">
-          <Hexagon className="w-12 h-12 text-gold-500 fill-current" />
+    <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-md card p-5 sm:p-8">
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <Hexagon className="w-10 h-10 sm:w-12 sm:h-12 text-gold-500 fill-current" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Create Account</h2>
+        <h2 className="text-xl sm:text-2xl font-display font-bold text-center text-forest-900 mb-4 sm:mb-6">Create Account</h2>
         
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm text-center">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs sm:text-sm text-center">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-forest-900 mb-1">Full Name</label>
+            <label className="block text-xs sm:text-sm font-medium text-forest-900 mb-1">Full Name</label>
             <input 
               type="text" 
               required
@@ -65,7 +65,7 @@ export default function Signup() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-forest-900 mb-1">Email Address</label>
+            <label className="block text-xs sm:text-sm font-medium text-forest-900 mb-1">Email Address</label>
             <input 
               type="email" 
               required
@@ -76,7 +76,7 @@ export default function Signup() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-forest-900 mb-1">Password</label>
+            <label className="block text-xs sm:text-sm font-medium text-forest-900 mb-1">Password</label>
             <input 
               type="password" 
               required
@@ -87,13 +87,13 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit" disabled={signupMutation.isPending} className="btn-primary w-full flex justify-center items-center gap-2">
+          <button type="submit" disabled={signupMutation.isPending} className="btn-primary w-full flex justify-center items-center gap-2 py-3">
             {signupMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Sign Up
           </button>
         </form>
         
-        <p className="mt-4 text-center text-sm text-charcoal-800">
-          Already have an account? <Link to="/login" className="text-gold-600 font-medium hover:underline">Sign in</Link>
+        <p className="mt-5 text-center text-xs sm:text-sm text-charcoal-800">
+          Already have an account? <Link to="/login" className="text-gold-600 font-semibold hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

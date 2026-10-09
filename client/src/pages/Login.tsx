@@ -50,42 +50,42 @@ export default function Login() {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md card p-8">
-        <div className="flex justify-center mb-6">
-          <Hexagon className="w-12 h-12 text-gold-500 fill-current" />
+    <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-md card p-5 sm:p-8">
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <Hexagon className="w-10 h-10 sm:w-12 sm:h-12 text-gold-500 fill-current" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Sign In</h2>
+        <h2 className="text-xl sm:text-2xl font-display font-bold text-center text-forest-900 mb-4 sm:mb-6">Sign In</h2>
         
         {/* Demo Credentials Info */}
-        <div className="bg-ivory-100 border border-ivory-200 rounded-lg p-4 mb-6 text-sm text-charcoal-800">
+        <div className="bg-ivory-100 border border-ivory-200 rounded-lg p-3.5 sm:p-4 mb-5 text-xs sm:text-sm text-charcoal-800">
           <div className="flex items-center gap-2 font-semibold text-forest-900 mb-2">
-            <Info className="w-4 h-4" />
-            Demo Credentials (Click to fill)
+            <Info className="w-4 h-4 text-gold-600 flex-shrink-0" />
+            <span>Demo Credentials (Click to auto-fill)</span>
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Admin:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <span className="font-medium text-xs text-charcoal-700">Admin:</span>
               <button 
                 type="button"
                 onClick={() => {
                   setEmail('admin@aurumflow.com');
                   setPassword('admin');
                 }}
-                className="font-mono text-xs bg-white hover:bg-gold-50 border border-ivory-200 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95"
+                className="font-mono text-[11px] sm:text-xs bg-white hover:bg-gold-50 border border-ivory-300 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95 text-left sm:text-center"
               >
                 admin@aurumflow.com / admin
               </button>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="font-medium">User:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <span className="font-medium text-xs text-charcoal-700">User:</span>
               <button 
                 type="button"
                 onClick={() => {
                   setEmail('user@aurumflow.com');
                   setPassword('user');
                 }}
-                className="font-mono text-xs bg-white hover:bg-gold-50 border border-ivory-200 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95"
+                className="font-mono text-[11px] sm:text-xs bg-white hover:bg-gold-50 border border-ivory-300 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95 text-left sm:text-center"
               >
                 user@aurumflow.com / user
               </button>
@@ -94,14 +94,14 @@ export default function Login() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm text-center">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs sm:text-sm text-center">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-forest-900 mb-1">Email Address</label>
+            <label className="block text-xs sm:text-sm font-medium text-forest-900 mb-1">Email Address</label>
             <input 
               type="email" 
               required
@@ -112,7 +112,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-forest-900 mb-1">Password</label>
+            <label className="block text-xs sm:text-sm font-medium text-forest-900 mb-1">Password</label>
             <input 
               type="password" 
               required
@@ -122,13 +122,13 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit" disabled={loginMutation.isPending} className="btn-primary w-full flex justify-center items-center gap-2">
+          <button type="submit" disabled={loginMutation.isPending} className="btn-primary w-full flex justify-center items-center gap-2 py-3">
             {loginMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />} Sign In
           </button>
         </form>
         
-        <p className="mt-4 text-center text-sm text-charcoal-800">
-          Don't have an account? <Link to="/signup" className="text-gold-600 font-medium hover:underline">Sign up</Link>
+        <p className="mt-5 text-center text-xs sm:text-sm text-charcoal-800">
+          Don't have an account? <Link to="/signup" className="text-gold-600 font-semibold hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

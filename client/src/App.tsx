@@ -4,6 +4,7 @@ import ApplicationFlow from './pages/ApplicationFlow';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import TrackApplication from './pages/TrackApplication';
 import Header from './components/Header';
 import AiAssistant from './components/AiAssistant';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -21,6 +22,7 @@ function App() {
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/apply" element={<ApplicationFlow />} />
+              <Route path="/track" element={<TrackApplication />} />
             </Route>
             
             <Route element={<ProtectedRoute requiredRole="admin" />}>

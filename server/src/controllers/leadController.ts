@@ -11,6 +11,7 @@ import { calculateGoldQuote, paiseToRupees } from '../services/calculationServic
 import {
   createLead,
   getLeads,
+  getLeadByApplicationId,
   DuplicateLeadError,
 } from '../repositories/leadRepository';
 import { generateApplicationId } from '../utils/applicationId';
@@ -133,6 +134,32 @@ export async function getLeadsController(
       page,
       limit,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getLeadByIdController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { id } = req.params;
+    
+    if (!id || typeof id !== 'string') {
+      sendError(res, 400, 'VALIDATION_ERROR', 'Application ID is required.');
+      return;
+    }
+
+    const lead = await getLeadByApplicationId(id);
+
+    if (!lead) {
+      sendError(res, 404, 'NOT_FOUND', 'Application not found.');
+      return;
+    }
+
+    sendSuccess(res, lead, 200);
   } catch (err) {
     next(err);
   }

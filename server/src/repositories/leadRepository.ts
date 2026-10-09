@@ -138,3 +138,35 @@ export async function getLeads(
 
   return { leads, total };
 }
+
+/**
+ * Get a single lead by its applicationId.
+ */
+export async function getLeadByApplicationId(applicationId: string) {
+  const lead = await prisma.lead.findUnique({
+    where: { applicationId },
+    include: { scheme: { select: { id: true, name: true, annualInterestRatePercent: true, maxLtvPercent: true } } },
+  });
+
+  if (!lead) return null;
+
+  return {
+    applicationId: lead.applicationId,
+    customerName: lead.customerName,
+    mobileNumber: lead.mobileNumber, // full for user's own tracking
+    grossWeightGrams: lead.grossWeightGrams.toString(),
+    netWeightGrams: lead.netWeightGrams.toString(),
+    karat: lead.karat,
+    selectedPlan: {
+      id: lead.scheme.id,
+      name: lead.scheme.name,
+      annualInterestRatePercent: lead.scheme.annualInterestRatePercent.toString(),
+      maxLtvPercent: lead.scheme.maxLtvPercent.toString(),
+    },
+    pureGoldGrams: lead.pureGoldGrams.toString(),
+    goldValueRupees: Number(lead.goldValuePaise) / 100,
+    eligibleLoanRupees: Number(lead.eligibleLoanPaise) / 100,
+    status: lead.status,
+    createdAt: lead.createdAt,
+  };
+}

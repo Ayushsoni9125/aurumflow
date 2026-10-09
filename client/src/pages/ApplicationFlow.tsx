@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,6 +23,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function ApplicationFlow() {
+  const navigate = useNavigate();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
@@ -129,9 +131,14 @@ export default function ApplicationFlow() {
           <p className="text-sm text-gray-500">
             Please keep this ID for your records. Our team will contact you shortly.
           </p>
-          <button onClick={() => window.location.reload()} className="btn-secondary w-full">
-            Start New Application
-          </button>
+          <div className="flex gap-4">
+            <button onClick={() => navigate('/track')} className="btn-primary w-full">
+              Track Application
+            </button>
+            <button onClick={() => window.location.reload()} className="btn-secondary w-full whitespace-nowrap">
+              Start New
+            </button>
+          </div>
         </div>
       </div>
     );

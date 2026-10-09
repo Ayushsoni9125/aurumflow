@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import prisma from '../repositories/prismaClient';
 import { sendSuccess, sendError, zodErrorToFields } from '../utils/apiResponse';
+
+const SALT_ROUNDS = 10;
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -35,11 +38,13 @@ export async function registerController(
       return;
     }
 
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        password, // In a real app, hash this!
+        password: hashedPassword,
         role: role || 'user',
       },
     });
@@ -69,7 +74,21 @@ export async function loginController(
       sendError(res, 404, 'NOT_FOUND', 'User not registered. Please sign up first.');
       return;
     }
-    if (user.password !== password) {
+
+    // Verify password with bcrypt
+    let isPasswordValid = await bcrypt.compare(password, user.password).catch(() => false);
+
+    // Fallback for legacy unhashed passwords: verify and auto-upgrade to bcrypt hash
+    if (!isPasswordValid && user.password === password) {
+      isPasswordValid = true;
+      const rehashed = await bcrypt.hash(password, SALT_ROUNDS);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: rehashed },
+      });
+    }
+
+    if (!isPasswordValid) {
       sendError(res, 401, 'UNAUTHORIZED', 'Incorrect email or password.');
       return;
     }

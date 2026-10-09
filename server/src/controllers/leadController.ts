@@ -18,12 +18,23 @@ import { generateApplicationId } from '../utils/applicationId';
 import { sendSuccess, sendError, zodErrorToFields } from '../utils/apiResponse';
 import { ZodError } from 'zod';
 
+const idempotencyCache = new Map<string, { status: number; body: any; timestamp: number }>();
+
 export async function createLeadController(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
+    const idempotencyKey = (req.headers['idempotency-key'] || req.headers['x-idempotency-key']) as string | undefined;
+
+    // Check if we already processed this exact idempotency key
+    if (idempotencyKey && idempotencyCache.has(idempotencyKey)) {
+      const cached = idempotencyCache.get(idempotencyKey)!;
+      res.status(cached.status).json(cached.body);
+      return;
+    }
+
     const parsed = createLeadSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -84,19 +95,31 @@ export async function createLeadController(
         status: 'SUBMITTED',
       });
 
-      sendSuccess(res, {
-        applicationId: lead.applicationId,
-        status: lead.status,
-        pureGoldGrams: lead.pureGoldGrams.toNumber(),
-        goldValueRupees: paiseToRupees(lead.goldValuePaise),
-        eligibleLoanRupees: paiseToRupees(lead.eligibleLoanPaise),
-      }, 201);
+      const responsePayload = {
+        success: true,
+        data: {
+          applicationId: lead.applicationId,
+          status: lead.status,
+          pureGoldGrams: lead.pureGoldGrams.toNumber(),
+          goldValueRupees: paiseToRupees(lead.goldValuePaise),
+          eligibleLoanRupees: paiseToRupees(lead.eligibleLoanPaise),
+        },
+      };
+
+      if (idempotencyKey) {
+        idempotencyCache.set(idempotencyKey, {
+          status: 201,
+          body: responsePayload,
+          timestamp: Date.now(),
+        });
+      }
+
+      res.status(201).json(responsePayload);
     } catch (err) {
       if (err instanceof DuplicateLeadError) {
         sendError(res, 409, 'CONFLICT', err.message, [
           { field: 'mobileNumber', message: `Application ${err.existingApplicationId} already exists.` },
         ]);
-        // Also send existing app id in meta or a specific field if UI needs it easily
         return;
       }
       throw err;

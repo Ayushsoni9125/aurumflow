@@ -143,6 +143,63 @@ describe('API Integration Tests', () => {
       }
     });
 
+    it('BONUS 7: Same request, same Idempotency-Key returns original 201 replayed', async () => {
+      if (!schemeId) throw new Error('No scheme found');
+
+      const uniqueMobile = `9${Math.floor(100000000 + Math.random() * 900000000)}`;
+      const idempotencyKey = `idem-${Date.now()}-${Math.random()}`;
+
+      const payload = {
+        customerName: 'Idempotency User',
+        mobileNumber: uniqueMobile,
+        grossWeightGrams: 50,
+        netWeightGrams: 45,
+        karat: 22,
+        selectedPlanId: schemeId,
+      };
+
+      // First call
+      const res1 = await request(app)
+        .post('/api/v1/leads')
+        .set('Idempotency-Key', idempotencyKey)
+        .send(payload);
+
+      expect(res1.status).toBe(201);
+      const originalAppId = res1.body.data.applicationId;
+
+      // Second identical call with same Idempotency-Key
+      const res2 = await request(app)
+        .post('/api/v1/leads')
+        .set('Idempotency-Key', idempotencyKey)
+        .send(payload);
+
+      expect(res2.status).toBe(201);
+      expect(res2.body.data.applicationId).toBe(originalAppId);
+    });
+
+    it('BONUS 8: 2 parallel requests with same new mobile result in exactly one 201 and one 409', async () => {
+      if (!schemeId) throw new Error('No scheme found');
+
+      const parallelMobile = `9${Math.floor(100000000 + Math.random() * 900000000)}`;
+
+      const payload = {
+        customerName: 'Parallel User',
+        mobileNumber: parallelMobile,
+        grossWeightGrams: 50,
+        netWeightGrams: 45,
+        karat: 22,
+        selectedPlanId: schemeId,
+      };
+
+      const [res1, res2] = await Promise.all([
+        request(app).post('/api/v1/leads').send(payload),
+        request(app).post('/api/v1/leads').send(payload),
+      ]);
+
+      const statuses = [res1.status, res2.status].sort();
+      expect(statuses).toEqual([201, 409]);
+    });
+
     it('returns 404 for nonexistent plan', async () => {
       const payload = {
         customerName: 'Test User',

@@ -70,7 +70,7 @@ export async function loginController(
       return;
     }
     if (user.password !== password) {
-      sendError(res, 401, 'UNAUTHORIZED', 'Incorrect password.');
+      sendError(res, 401, 'UNAUTHORIZED', 'Incorrect email or password.');
       return;
     }
 

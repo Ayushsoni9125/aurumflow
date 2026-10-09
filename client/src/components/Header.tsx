@@ -63,7 +63,7 @@ export default function Header() {
                     to="/admin" 
                     className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
                   >
-                    Admin View
+                    Applications
                   </Link>
                 )}
                 

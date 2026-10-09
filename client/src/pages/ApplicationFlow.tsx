@@ -62,6 +62,14 @@ export default function ApplicationFlow() {
     mutationFn: submitLead,
     onSuccess: (data) => {
       setApplicationId(data.applicationId);
+      
+      // Save to local history
+      const myApps = JSON.parse(localStorage.getItem('myApplications') || '[]');
+      if (!myApps.includes(data.applicationId)) {
+        myApps.push(data.applicationId);
+        localStorage.setItem('myApplications', JSON.stringify(myApps));
+      }
+      
       setStep(4); // Success
     },
     onError: (error: any) => {

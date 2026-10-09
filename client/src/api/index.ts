@@ -99,3 +99,8 @@ export const fetchLeads = async (planId?: string) => {
   const { data } = await apiClient.get('/leads', { params });
   return data.data;
 };
+
+export const fetchLeadById = async (id: string) => {
+  const { data } = await apiClient.get(`/leads/${id}`);
+  return data.data;
+};

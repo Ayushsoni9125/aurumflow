@@ -19,8 +19,8 @@ export default function Header() {
 
           <nav className="flex items-center gap-6">
             <Link 
-              to="/" 
-              className={`text-sm font-medium transition-colors ${location.pathname === '/' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
+              to="/apply" 
+              className={`text-sm font-medium transition-colors ${location.pathname === '/apply' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
             >
               Apply
             </Link>

@@ -108,7 +108,7 @@ export async function handleAiChat(
 
   // Call Gemini
   let response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-flash-latest',
     contents,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
@@ -245,7 +245,7 @@ export async function handleAiChat(
     // Send tool responses back to the model
     contents.push({ role: 'user', parts: toolResponsesParts });
     response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-flash-latest',
       contents,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,

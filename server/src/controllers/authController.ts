@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import prisma from '../repositories/prismaClient';
-import { sendSuccess, sendError } from '../utils/apiResponse';
+import { sendSuccess, sendError, zodErrorToFields } from '../utils/apiResponse';
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -23,7 +23,7 @@ export async function registerController(
   try {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
-      sendError(res, 400, 'VALIDATION_ERROR', 'Invalid inputs', parsed.error.issues);
+      sendError(res, 400, 'VALIDATION_ERROR', 'Invalid inputs', zodErrorToFields(parsed.error));
       return;
     }
 
@@ -58,7 +58,7 @@ export async function loginController(
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
-      sendError(res, 400, 'VALIDATION_ERROR', 'Invalid inputs', parsed.error.issues);
+      sendError(res, 400, 'VALIDATION_ERROR', 'Invalid inputs', zodErrorToFields(parsed.error));
       return;
     }
 

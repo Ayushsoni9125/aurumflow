@@ -100,7 +100,7 @@ export async function handleAiChat(
 ): Promise<{ text: string; actionRequested?: string }> {
   
   // Format history for Gemini SDK
-  const contents = history.map(msg => ({
+  const contents: any[] = history.map(msg => ({
     role: msg.role,
     parts: [{ text: msg.content }]
   }));
@@ -108,7 +108,7 @@ export async function handleAiChat(
 
   // Call Gemini
   let response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+    model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
     contents,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
@@ -124,16 +124,18 @@ export async function handleAiChat(
   while (response.functionCalls && response.functionCalls.length > 0 && iterations < maxIterations) {
     iterations++;
     
-    // Append the model's tool call request to history
+    // Append the model's candidate parts to history to retain thought signatures & function calls
+    const modelParts = (response.candidates?.[0]?.content?.parts as any) || response.functionCalls.map(fc => ({ functionCall: fc }));
     contents.push({
       role: 'model',
-      parts: response.functionCalls.map(fc => ({ functionCall: fc }))
+      parts: modelParts
     });
 
     const toolResponsesParts = [];
 
     for (const call of response.functionCalls) {
       const { name, args } = call;
+      const safeArgs: any = args || {};
       let resultStr = '';
       let isError = false;
 
@@ -153,7 +155,7 @@ export async function handleAiChat(
         } 
         else if (name === 'calculate_quote') {
           // Validate args using shared schema
-          const parsed = quoteRequestSchema.safeParse(args);
+          const parsed = quoteRequestSchema.safeParse(safeArgs);
           if (!parsed.success) {
             resultStr = JSON.stringify({ error: "Validation Error", details: parsed.error.errors.map(e => e.message) });
             isError = true;
@@ -176,14 +178,14 @@ export async function handleAiChat(
         }
         else if (name === 'submit_application') {
           // MANDATORY SAFETY GATE: Enforce confirmation token
-          if (!providedConfirmationToken || args.confirmationToken !== providedConfirmationToken) {
+          if (!providedConfirmationToken || safeArgs.confirmationToken !== providedConfirmationToken) {
             resultStr = JSON.stringify({
               error: "Submission Denied",
               message: "Application cannot be submitted because the user has not explicitly confirmed in the UI."
             });
             isError = true;
           } else {
-            const parsed = createLeadSchema.safeParse(args);
+            const parsed = createLeadSchema.safeParse(safeArgs);
             if (!parsed.success) {
               resultStr = JSON.stringify({ error: "Validation Error", details: parsed.error.errors.map(e => e.message) });
               isError = true;
@@ -245,7 +247,7 @@ export async function handleAiChat(
     // Send tool responses back to the model
     contents.push({ role: 'user', parts: toolResponsesParts });
     response = await ai.models.generateContent({
-        model: 'gemini-flash-latest',
+      model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
       contents,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,

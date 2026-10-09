@@ -151,7 +151,7 @@ export async function getLeads(
 export async function getLeadByApplicationId(applicationId: string) {
   const lead = await prisma.lead.findUnique({
     where: { applicationId },
-    include: { scheme: { select: { id: true, name: true, annualInterestRatePercent: true, maxLtvPercent: true } } },
+    include: { scheme: { select: { id: true, name: true, annualInterestRate: true, maxLtv: true } } },
   });
 
   if (!lead) return null;
@@ -166,8 +166,8 @@ export async function getLeadByApplicationId(applicationId: string) {
     selectedPlan: {
       id: lead.scheme.id,
       name: lead.scheme.name,
-      annualInterestRatePercent: lead.scheme.annualInterestRatePercent.toString(),
-      maxLtvPercent: lead.scheme.maxLtvPercent.toString(),
+      annualInterestRatePercent: (Number(lead.scheme.annualInterestRate) * 100).toString(),
+      maxLtvPercent: (Number(lead.scheme.maxLtv) * 100).toString(),
     },
     pureGoldGrams: lead.pureGoldGrams.toString(),
     goldValueRupees: Number(lead.goldValuePaise) / 100,

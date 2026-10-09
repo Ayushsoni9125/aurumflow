@@ -4,7 +4,6 @@
  */
 
 import { handleAiChat, ChatMessage } from '../../ai/agent';
-import { generateApplicationId } from '../../utils/applicationId';
 import prisma from '../../repositories/prismaClient';
 
 const PASS = '✅ PASS';
@@ -21,7 +20,6 @@ interface Scenario {
 const runEvals = async () => {
   console.log('🤖 Starting AurumFlow AI Agent Evaluations...\n');
 
-  const initialLeadsCount = await prisma.lead.count();
   let passed = 0;
   let total = 0;
 

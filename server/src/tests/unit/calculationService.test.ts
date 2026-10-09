@@ -5,7 +5,6 @@ import {
   calculateEligibleLoanPaise,
   calculateGoldQuote,
   maskMobileNumber,
-  RATE_24K_PER_GRAM_RUPEES,
   paiseToRupees,
 } from '../../services/calculationService';
 

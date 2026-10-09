@@ -51,11 +51,6 @@ describe('API Integration Tests', () => {
       expect(data.pureGoldGrams).toBeCloseTo(41.25, 4);
       expect(data.goldValueRupees).toBe(288750);
       expect(data.schemes.length).toBeGreaterThan(0);
-      
-      // Should not have created a lead
-      const leads = await prisma.lead.count();
-      // Well, we can't cleanly test "did not create" unless we count before and after
-      // But we know /quotes endpoint doesn't even import createLead.
     });
 
     it('rejects net weight > gross weight (Test 4)', async () => {

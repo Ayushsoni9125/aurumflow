@@ -4,7 +4,10 @@ import { handleAiChat } from '../ai/agent';
 import { sendSuccess, sendError, zodErrorToFields } from '../utils/apiResponse';
 import { ZodError } from 'zod';
 
+import prisma from '../repositories/prismaClient';
+
 const chatRequestSchema = z.object({
+  userId: z.string().optional(),
   history: z.array(z.object({
     role: z.enum(['user', 'model']),
     content: z.string()
@@ -32,7 +35,19 @@ export async function aiChatController(
       return;
     }
 
-    const { history, message, confirmationToken } = parsed.data;
+    const { history, message, confirmationToken, userId } = parsed.data;
+
+    // Check if user is authenticated
+    if (!userId) {
+      sendError(res, 401, 'UNAUTHORIZED', 'Authentication is required to use the AI Assistant. Please sign in.');
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      sendError(res, 401, 'UNAUTHORIZED', 'Valid user account is required to use the AI Assistant.');
+      return;
+    }
 
     try {
       const response = await handleAiChat(history, message, confirmationToken);

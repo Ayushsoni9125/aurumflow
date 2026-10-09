@@ -65,6 +65,7 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
+  userId?: string;
   history: ChatMessage[];
   message: string;
   confirmationToken?: string;

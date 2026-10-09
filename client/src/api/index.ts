@@ -104,3 +104,13 @@ export const fetchLeadById = async (id: string) => {
   const { data } = await apiClient.get(`/leads/${id}`);
   return data.data;
 };
+
+export const registerUser = async (payload: any) => {
+  const { data } = await apiClient.post('/auth/register', payload);
+  return data.data;
+};
+
+export const loginUser = async (payload: any) => {
+  const { data } = await apiClient.post('/auth/login', payload);
+  return data.data;
+};

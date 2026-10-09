@@ -3,8 +3,13 @@ import { getLoanSchemesController } from '../controllers/schemeController';
 import { getQuoteController } from '../controllers/quoteController';
 import { createLeadController, getLeadsController, getLeadByIdController } from '../controllers/leadController';
 import { aiChatController } from '../controllers/aiController';
+import { loginController, registerController } from '../controllers/authController';
 
 const router = Router();
+
+// Auth
+router.post('/auth/register', registerController);
+router.post('/auth/login', loginController);
 
 // Loan Schemes
 router.get('/loan-schemes', getLoanSchemesController);

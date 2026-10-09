@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Hexagon, Lock, Info } from 'lucide-react';
+import { Hexagon, Lock, Info, Loader2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { loginUser } from '../api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -8,18 +10,29 @@ export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userRole', data.role);
+      navigate(data.role === 'admin' ? '/admin' : '/apply');
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.error?.message || 'Invalid email or password');
+    }
+  });
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    // Check demo credentials
+    // Hardcoded demo check for quick access without DB setup for reviewers
     if (email === 'admin@aurumflow.com' && password === 'admin') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'admin');
       navigate('/admin');
       return;
     } 
-    
     if (email === 'user@aurumflow.com' && password === 'user') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'user');
@@ -27,17 +40,7 @@ export default function Login() {
       return;
     }
 
-    // Check registered users
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const validUser = users.find((u: any) => u.email === email && u.password === password);
-
-    if (validUser) {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', 'user');
-      navigate('/apply');
-    } else {
-      setError('Invalid email or password');
-    }
+    loginMutation.mutate({ email, password });
   };
 
   return (
@@ -113,8 +116,8 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit" className="btn-primary w-full flex justify-center items-center gap-2">
-            <Lock className="w-4 h-4" /> Sign In
+          <button type="submit" disabled={loginMutation.isPending} className="btn-primary w-full flex justify-center items-center gap-2">
+            {loginMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />} Sign In
           </button>
         </form>
         

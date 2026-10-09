@@ -1,28 +1,32 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Hexagon, UserPlus } from 'lucide-react';
+import { Hexagon, UserPlus, Loader2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { registerUser } from '../api';
 
 export default function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const signupMutation = useMutation({
+    mutationFn: registerUser,
+    onSuccess: (data) => {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userRole', data.role);
+      navigate('/apply');
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.error?.message || 'Failed to create account');
+    }
+  });
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    if (users.some((u: any) => u.email === email)) {
-      alert("An account with this email already exists.");
-      return;
-    }
-
-    users.push({ name, email, password });
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-    
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userRole', 'user');
-    navigate('/apply');
+    setError('');
+    signupMutation.mutate({ name, email, password });
   };
 
   return (
@@ -33,6 +37,12 @@ export default function Signup() {
         </div>
         <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Create Account</h2>
         
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-forest-900 mb-1">Full Name</label>
@@ -67,8 +77,8 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <button type="submit" className="btn-primary w-full flex justify-center items-center gap-2">
-            <UserPlus className="w-4 h-4" /> Sign Up
+          <button type="submit" disabled={signupMutation.isPending} className="btn-primary w-full flex justify-center items-center gap-2">
+            {signupMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />} Sign Up
           </button>
         </form>
         

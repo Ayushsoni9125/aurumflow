@@ -10,9 +10,19 @@ export default function Signup() {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock signup that redirects to admin
+    
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    if (users.some((u: any) => u.email === email)) {
+      alert("An account with this email already exists.");
+      return;
+    }
+
+    users.push({ name, email, password });
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    
     localStorage.setItem('isAuthenticated', 'true');
-    navigate('/admin');
+    localStorage.setItem('userRole', 'user');
+    navigate('/apply');
   };
 
   return (
@@ -21,7 +31,7 @@ export default function Signup() {
         <div className="flex justify-center mb-6">
           <Hexagon className="w-12 h-12 text-gold-500 fill-current" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Create Admin Account</h2>
+        <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Create Account</h2>
         
         <form onSubmit={handleSignup} className="space-y-4">
           <div>

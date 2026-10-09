@@ -5,19 +5,38 @@ import { Hexagon, Lock, Info } from 'lucide-react';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
-    // Mock login and assign roles
-    localStorage.setItem('isAuthenticated', 'true');
-    if (email === 'admin@aurumflow.com') {
+    // Check demo credentials
+    if (email === 'admin@aurumflow.com' && password === 'admin') {
+      localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'admin');
       navigate('/admin');
-    } else {
+      return;
+    } 
+    
+    if (email === 'user@aurumflow.com' && password === 'user') {
+      localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'user');
       navigate('/apply');
+      return;
+    }
+
+    // Check registered users
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const validUser = users.find((u: any) => u.email === email && u.password === password);
+
+    if (validUser) {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userRole', 'user');
+      navigate('/apply');
+    } else {
+      setError('Invalid email or password');
     }
   };
 
@@ -64,6 +83,12 @@ export default function Login() {
             </div>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>

@@ -193,15 +193,33 @@ For quick evaluation, click the demo buttons on the Sign In page or use:
 
 | Role | Email | Password |
 |---|---|---|
-| **Admin** | `admin@aurumflow.com` | `admin` |
-| **User** | `user@aurumflow.com` | `user` |
+---
+
+## 🚀 What We'd Do With More Time (Future Roadmap)
+
+1. **Multimodal Appraisal Slip OCR**: Upload an image or PDF of a jeweler appraisal slip and use Gemini Vision (`gemini-2.5-flash`) to auto-populate gross weight, net weight, and karat.
+2. **Real-Time Market Gold Rate Feed**: Connect to live gold price APIs (e.g. IBJA / GoldAPI) with Redis caching (5-minute TTL) and automatic fallback to last known good rates.
+3. **Application Lifecycle Audit Trail**: Full workflow transitions (`SUBMITTED` → `UNDER_REVIEW` → `APPRAISED` → `DISBURSED` / `REJECTED`) with time-stamped audit logs and email/SMS alerts.
+4. **Biometric e-KYC & Digilocker Integration**: Aadhaar XML / PAN verification during step 1 for instant field identity confirmation.
 
 ---
 
-## 🌐 Production Deployment
+## 🏆 Bonus Features Implemented
 
-- **Frontend (Vercel)**: Configured with `vercel.json` SPA URL rewrites.
-- **Backend (Render)**: Configured with production health check endpoint `/health` and Supabase PostgreSQL connection pool.
+- [x] **B1. Backend Hardening**:
+  - `Idempotency-Key` header handling on `POST /api/v1/leads` with replay caching.
+  - Concurrency-safe atomic duplicate prevention inside Prisma transactions.
+  - Rate limiting via `express-rate-limit`.
+- [x] **B2. Smarter AI Agent**:
+  - Live Server-Sent Events (SSE) token streaming.
+  - Tool status indicators and markdown formatting.
+- [x] **B3. Full Security & Auth**:
+  - JWT token authentication + Bcrypt password hashing.
+  - Role-based route authorization (`admin` vs `user`).
+- [x] **B4. Production Ready**:
+  - Responsive layout (mobile, tablet, desktop) down to 320px.
+  - Automated evaluation script (`npm run eval`).
+  - Vitest + Supertest integration test suite (17 tests).
 
 ---
 

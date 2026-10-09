@@ -8,15 +8,20 @@ export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem('isAuthenticated') === 'true'
   );
+  const [userRole, setUserRole] = useState(
+    localStorage.getItem('userRole') || 'user'
+  );
 
   useEffect(() => {
     setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
+    setUserRole(localStorage.getItem('userRole') || 'user');
   }, [location]);
 
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
     setIsAuthenticated(false);
+    setUserRole('user');
     navigate('/');
   };
 
@@ -42,12 +47,16 @@ export default function Header() {
                 >
                   Apply
                 </Link>
-                <Link 
-                  to="/admin" 
-                  className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
-                >
-                  Admin View
-                </Link>
+                
+                {userRole === 'admin' && (
+                  <Link 
+                    to="/admin" 
+                    className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
+                  >
+                    Admin View
+                  </Link>
+                )}
+                
                 <button 
                   onClick={handleSignOut}
                   className="text-sm font-medium bg-forest-900 text-white px-4 py-2 rounded-lg hover:bg-forest-800 transition-colors"

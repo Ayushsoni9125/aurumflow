@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Hexagon, Lock } from 'lucide-react';
+import { Hexagon, Lock, Info } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -9,9 +9,16 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login that redirects to admin
+    
+    // Mock login and assign roles
     localStorage.setItem('isAuthenticated', 'true');
-    navigate('/admin');
+    if (email === 'admin@aurumflow.com') {
+      localStorage.setItem('userRole', 'admin');
+      navigate('/admin');
+    } else {
+      localStorage.setItem('userRole', 'user');
+      navigate('/apply');
+    }
   };
 
   return (
@@ -20,8 +27,26 @@ export default function Login() {
         <div className="flex justify-center mb-6">
           <Hexagon className="w-12 h-12 text-gold-500 fill-current" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Sign In to Admin</h2>
+        <h2 className="text-2xl font-display font-bold text-center text-forest-900 mb-6">Sign In</h2>
         
+        {/* Demo Credentials Info */}
+        <div className="bg-ivory-100 border border-ivory-200 rounded-lg p-4 mb-6 text-sm text-charcoal-800">
+          <div className="flex items-center gap-2 font-semibold text-forest-900 mb-2">
+            <Info className="w-4 h-4" />
+            Demo Credentials
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="font-medium">Admin:</span>
+              <span className="font-mono text-xs bg-white px-2 py-1 rounded">admin@aurumflow.com / admin</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">User:</span>
+              <span className="font-mono text-xs bg-white px-2 py-1 rounded">user@aurumflow.com / user</span>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-forest-900 mb-1">Email Address</label>
@@ -29,7 +54,7 @@ export default function Login() {
               type="email" 
               required
               className="input-field" 
-              placeholder="admin@aurumflow.com" 
+              placeholder="user@aurumflow.com" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />

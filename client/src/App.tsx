@@ -21,6 +21,9 @@ function App() {
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/apply" element={<ApplicationFlow />} />
+            </Route>
+            
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="/admin" element={<AdminDashboard />} />
             </Route>
 

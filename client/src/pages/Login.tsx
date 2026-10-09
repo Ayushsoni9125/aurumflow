@@ -16,6 +16,7 @@ export default function Login() {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', data.role);
       localStorage.setItem('userId', data.id);
+      localStorage.setItem('userName', data.name || email.split('@')[0]);
       navigate(data.role === 'admin' ? '/admin' : '/apply');
     },
     onError: (err: any) => {
@@ -31,12 +32,16 @@ export default function Login() {
     if (email === 'admin@aurumflow.com' && password === 'admin') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'admin');
+      localStorage.setItem('userId', 'demo-admin-id');
+      localStorage.setItem('userName', 'Admin');
       navigate('/admin');
       return;
     } 
     if (email === 'user@aurumflow.com' && password === 'user') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', 'user');
+      localStorage.setItem('userId', 'demo-user-id');
+      localStorage.setItem('userName', 'User');
       navigate('/apply');
       return;
     }

@@ -15,7 +15,7 @@ export default function AiAssistant() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const userId = localStorage.getItem('userId') || undefined;
+  const userId = localStorage.getItem('userId') || (isAuthenticated ? 'authenticated-user' : undefined);
   const userName = localStorage.getItem('userName') || 'there';
 
   const [messages, setMessages] = useState<ChatMessage[]>([

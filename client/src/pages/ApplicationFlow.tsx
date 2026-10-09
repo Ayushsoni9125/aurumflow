@@ -78,7 +78,14 @@ export default function ApplicationFlow() {
     if (step === 2) {
       const timer = setTimeout(() => {
         if (isValid) {
-          quoteMutation.mutate(formValues as any);
+          // Coerce string inputs to numbers for the backend
+          const payload = {
+            ...formValues,
+            grossWeightGrams: Number(formValues.grossWeightGrams),
+            netWeightGrams: Number(formValues.netWeightGrams),
+            karat: Number(formValues.karat)
+          };
+          quoteMutation.mutate(payload as any);
         }
       }, 300);
       return () => clearTimeout(timer);
@@ -96,6 +103,9 @@ export default function ApplicationFlow() {
       setApiError(null);
       submitMutation.mutate({
         ...formValues,
+        grossWeightGrams: Number(formValues.grossWeightGrams),
+        netWeightGrams: Number(formValues.netWeightGrams),
+        karat: Number(formValues.karat),
         selectedPlanId
       });
     }

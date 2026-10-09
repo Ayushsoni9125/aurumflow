@@ -32,7 +32,7 @@ export default function TrackApplication() {
         </div>
       )}
 
-      {data?.leads && data.leads.length === 0 && (
+      {data && data.length === 0 && (
         <div className="card p-12 text-center flex flex-col items-center">
           <FileText className="w-12 h-12 text-gray-300 mb-4" />
           <h3 className="text-lg font-bold text-forest-900">No applications found</h3>
@@ -43,9 +43,9 @@ export default function TrackApplication() {
         </div>
       )}
 
-      {data?.leads && data.leads.length > 0 && (
+      {data && data.length > 0 && (
         <div className="space-y-4">
-          {data.leads.map((lead) => (
+          {data.map((lead: any) => (
             <div key={lead.applicationId} className="card p-6 animate-in fade-in slide-in-from-bottom-4 transition-shadow hover:shadow-md border border-ivory-200 hover:border-gold-300">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-ivory-200 pb-4 mb-4">
                 <div>
@@ -60,7 +60,7 @@ export default function TrackApplication() {
                       })}
                     </div>
                   </div>
-                  <h3 className="font-bold text-forest-900 text-lg">{lead.selectedPlan.name}</h3>
+                  <h3 className="font-bold text-forest-900 text-lg">{lead.selectedPlan?.name}</h3>
                 </div>
                 
                 <div className="flex items-center gap-2 self-start md:self-auto">

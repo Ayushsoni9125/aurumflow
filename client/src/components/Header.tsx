@@ -41,18 +41,22 @@ export default function Header() {
           <nav className="flex items-center gap-6">
             {isAuthenticated ? (
               <>
-                <Link 
-                  to="/apply" 
-                  className={`text-sm font-medium transition-colors ${location.pathname === '/apply' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
-                >
-                  Apply
-                </Link>
-                <Link 
-                  to="/track" 
-                  className={`text-sm font-medium transition-colors ${location.pathname === '/track' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
-                >
-                  My Applications
-                </Link>
+                {userRole !== 'admin' && (
+                  <>
+                    <Link 
+                      to="/apply" 
+                      className={`text-sm font-medium transition-colors ${location.pathname === '/apply' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
+                    >
+                      Apply
+                    </Link>
+                    <Link 
+                      to="/track" 
+                      className={`text-sm font-medium transition-colors ${location.pathname === '/track' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
+                    >
+                      My Applications
+                    </Link>
+                  </>
+                )}
                 
                 {userRole === 'admin' && (
                   <Link 

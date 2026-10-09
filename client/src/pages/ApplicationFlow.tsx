@@ -116,7 +116,8 @@ export default function ApplicationFlow() {
         grossWeightGrams: Number(formValues.grossWeightGrams),
         netWeightGrams: Number(formValues.netWeightGrams),
         karat: Number(formValues.karat),
-        selectedPlanId
+        selectedPlanId,
+        userId: localStorage.getItem('userId') || undefined
       });
     }
   };

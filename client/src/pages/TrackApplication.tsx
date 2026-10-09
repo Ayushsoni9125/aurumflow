@@ -5,14 +5,12 @@ import { formatINR, cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
 
 export default function TrackApplication() {
-  const myAppIds = JSON.parse(localStorage.getItem('myApplications') || '[]');
+  const userId = localStorage.getItem('userId') || '';
 
-  const { data: allData, isLoading, isError } = useQuery({
-    queryKey: ['my-leads'],
-    queryFn: () => fetchLeads(),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['my-leads', userId],
+    queryFn: () => fetchLeads(undefined, userId),
   });
-
-  const data = allData ? allData.filter((lead: any) => myAppIds.includes(lead.applicationId)) : undefined;
 
   return (
     <div className="max-w-4xl mx-auto w-full">

@@ -19,6 +19,7 @@ export interface CreateLeadData {
   goldValuePaise: bigint;
   eligibleLoanPaise: bigint;
   status?: LeadStatus;
+  userId?: string;
 }
 
 /**
@@ -74,6 +75,7 @@ export async function createLead(data: CreateLeadData): Promise<Lead> {
         goldValuePaise: data.goldValuePaise,
         eligibleLoanPaise: data.eligibleLoanPaise,
         status: data.status ?? 'SUBMITTED',
+        userId: data.userId,
       },
     });
   });
@@ -106,10 +108,14 @@ export interface LeadListItem {
  */
 export async function getLeads(
   planId?: string,
+  userId?: string,
   page = 1,
   limit = 20
 ): Promise<{ leads: LeadListItem[]; total: number }> {
-  const where: Prisma.LeadWhereInput = planId ? { schemeId: planId } : {};
+  const where: Prisma.LeadWhereInput = {
+    ...(planId ? { schemeId: planId } : {}),
+    ...(userId ? { userId } : {}),
+  };
 
   const [rawLeads, total] = await prisma.$transaction([
     prisma.lead.findMany({

@@ -44,6 +44,7 @@ export async function createLeadController(
       netWeightGrams,
       karat,
       selectedPlanId,
+      userId,
     } = parsed.data;
 
     // Validate the plan
@@ -74,6 +75,7 @@ export async function createLeadController(
         netWeightGrams,
         karat,
         schemeId: selectedPlanId,
+        userId,
         pureGoldGrams: schemeQuote.pureGoldGrams,
         goldValuePaise: schemeQuote.goldValuePaise,
         eligibleLoanPaise: schemeQuote.eligibleLoanPaise,
@@ -125,9 +127,9 @@ export async function getLeadsController(
       return;
     }
 
-    const { planId, page, limit } = parsed.data;
+    const { planId, userId, page, limit } = parsed.data;
 
-    const { leads, total } = await getLeads(planId, page, limit);
+    const { leads, total } = await getLeads(planId, userId, page, limit);
 
     sendSuccess(res, leads, 200, {
       total,

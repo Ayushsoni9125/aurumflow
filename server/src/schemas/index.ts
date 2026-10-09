@@ -103,6 +103,7 @@ export const createLeadSchema = z
     netWeightGrams: netWeightSchema,
     karat: karatSchema,
     selectedPlanId: planIdSchema,
+    userId: z.string().optional(),
   })
   .refine((data) => data.netWeightGrams <= data.grossWeightGrams, {
     message: 'Net weight cannot exceed gross weight.',
@@ -115,6 +116,7 @@ export type CreateLeadRequest = z.infer<typeof createLeadSchema>;
 
 export const leadsFilterSchema = z.object({
   planId: z.string().optional(),
+  userId: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
 });

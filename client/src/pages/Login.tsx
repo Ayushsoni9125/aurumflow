@@ -15,6 +15,7 @@ export default function Login() {
     onSuccess: (data) => {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', data.role);
+      localStorage.setItem('userId', data.id);
       navigate(data.role === 'admin' ? '/admin' : '/apply');
     },
     onError: (err: any) => {

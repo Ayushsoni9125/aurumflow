@@ -16,10 +16,18 @@ export default function Signup() {
     onSuccess: (data) => {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', data.role);
+      localStorage.setItem('userId', data.id);
       navigate('/apply');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error?.message || 'Failed to create account');
+      const apiError = err.response?.data?.error;
+      if (apiError?.fields?.length > 0) {
+        const field = apiError.fields[0];
+        const fieldName = String(field.path[0]).charAt(0).toUpperCase() + String(field.path[0]).slice(1);
+        setError(`${fieldName}: ${field.message}`);
+      } else {
+        setError(apiError?.message || 'Failed to create account');
+      }
     }
   });
 
@@ -49,6 +57,7 @@ export default function Signup() {
             <input 
               type="text" 
               required
+              minLength={2}
               className="input-field" 
               placeholder="John Doe" 
               value={name}
@@ -71,6 +80,7 @@ export default function Signup() {
             <input 
               type="password" 
               required
+              minLength={6}
               className="input-field" 
               placeholder="••••••••" 
               value={password}

@@ -41,12 +41,15 @@ model Lead {
   status          LeadStatus @default(SUBMITTED)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+  userId          String?  @map("user_id")
 
   scheme          LoanScheme @relation(fields: [schemeId], references: [id])
+  user            User?      @relation(fields: [userId], references: [id])
 
   @@index([mobileNumber, createdAt])
   @@index([createdAt(sort: Desc)])
   @@index([schemeId])
+  @@index([userId])
   @@map("leads")
 }
 
@@ -66,6 +69,8 @@ model User {
   role      String   @default("user") // admin or user
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  leads     Lead[]
 
   @@map("users")
 }

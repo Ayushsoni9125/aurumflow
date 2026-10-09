@@ -48,6 +48,7 @@ export interface CreateLeadRequest {
   netWeightGrams: number;
   karat: number;
   selectedPlanId: string;
+  userId?: string;
 }
 
 export interface LeadResponse {
@@ -94,8 +95,10 @@ export const sendChatMessage = async (payload: ChatRequest): Promise<ChatRespons
   return data.data;
 };
 
-export const fetchLeads = async (planId?: string) => {
-  const params = planId ? { planId } : {};
+export const fetchLeads = async (planId?: string, userId?: string) => {
+  const params: any = {};
+  if (planId) params.planId = planId;
+  if (userId) params.userId = userId;
   const { data } = await apiClient.get('/leads', { params });
   return data.data;
 };

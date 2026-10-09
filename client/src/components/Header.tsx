@@ -1,8 +1,24 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Hexagon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem('isAuthenticated') === 'true'
+  );
+
+  useEffect(() => {
+    setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
+  }, [location]);
+
+  const handleSignOut = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('authToken');
+    setIsAuthenticated(false);
+    navigate('/');
+  };
 
   return (
     <header className="bg-white border-b border-ivory-200 sticky top-0 z-40">
@@ -24,18 +40,30 @@ export default function Header() {
             >
               Apply
             </Link>
-            <Link 
-              to="/admin" 
-              className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
-            >
-              Admin View
-            </Link>
-            <Link 
-              to="/login" 
-              className="text-sm font-medium bg-forest-900 text-white px-4 py-2 rounded-lg hover:bg-forest-800 transition-colors"
-            >
-              Sign In
-            </Link>
+            
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  to="/admin" 
+                  className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
+                >
+                  Admin View
+                </Link>
+                <button 
+                  onClick={handleSignOut}
+                  className="text-sm font-medium bg-forest-900 text-white px-4 py-2 rounded-lg hover:bg-forest-800 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link 
+                to="/login" 
+                className="text-sm font-medium bg-forest-900 text-white px-4 py-2 rounded-lg hover:bg-forest-800 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
           </nav>
         </div>
       </div>

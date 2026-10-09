@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
+
 export const apiClient = axios.create({
-  baseURL: '/api/v1',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -94,6 +96,83 @@ export const submitLead = async (payload: CreateLeadRequest): Promise<LeadRespon
 export const sendChatMessage = async (payload: ChatRequest): Promise<ChatResponse> => {
   const { data } = await apiClient.post('/chat', payload);
   return data.data;
+};
+
+export interface StreamHandlers {
+  onChunk?: (chunk: string) => void;
+  onStatus?: (status: string) => void;
+  signal?: AbortSignal;
+}
+
+export const sendChatMessageStream = async (
+  payload: ChatRequest,
+  handlers?: StreamHandlers
+): Promise<string> => {
+  const response = await fetch(`${API_BASE_URL}/chat/stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    signal: handlers?.signal,
+  });
+
+  if (!response.ok) {
+    let errorMsg = 'Failed to connect to AI Assistant';
+    try {
+      const errData = await response.json();
+      errorMsg = errData?.error?.message || errorMsg;
+    } catch {
+      // fallback
+    }
+    throw new Error(errorMsg);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('Streaming response body is not readable.');
+  }
+
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  let accumulatedText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || ''; // Keep remainder in buffer
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith('data: ')) continue;
+      const jsonStr = trimmed.slice(6);
+      try {
+        const data = JSON.parse(jsonStr);
+        if (data.type === 'status' && data.status) {
+          handlers?.onStatus?.(data.status);
+        } else if (data.type === 'chunk' && data.text) {
+          accumulatedText += data.text;
+          handlers?.onChunk?.(data.text);
+        } else if (data.type === 'done' && data.text) {
+          if (!accumulatedText) {
+            accumulatedText = data.text;
+            handlers?.onChunk?.(data.text);
+          }
+        } else if (data.type === 'error') {
+          throw new Error(data.message || 'AI Assistant encountered an error.');
+        }
+      } catch (err: any) {
+        if (err.message && err.message !== 'Unexpected end of JSON input') {
+          throw err;
+        }
+      }
+    }
+  }
+
+  return accumulatedText;
 };
 
 export const fetchLeads = async (planId?: string, userId?: string) => {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchLeads } from '../api';
-import { FileText, CheckCircle2, Loader2, AlertCircle, Calendar } from 'lucide-react';
+import { FileText, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { formatINR, cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
 

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { getLoanSchemesController } from '../controllers/schemeController';
 import { getQuoteController } from '../controllers/quoteController';
 import { createLeadController, getLeadsController, getLeadByIdController } from '../controllers/leadController';
-import { aiChatController } from '../controllers/aiController';
+import { aiChatController, aiChatStreamController } from '../controllers/aiController';
 import { loginController, registerController } from '../controllers/authController';
 
 const router = Router();
@@ -24,5 +24,6 @@ router.get('/leads/:id', getLeadByIdController);
 
 // AI Chat
 router.post('/chat', aiChatController);
+router.post('/chat/stream', aiChatStreamController);
 
 export default router;

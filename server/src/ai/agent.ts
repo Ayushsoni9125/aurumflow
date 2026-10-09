@@ -89,16 +89,29 @@ const tools = [{
   ]
 }];
 
+export interface StreamCallbacks {
+  onStatus?: (status: string) => void;
+  onChunk?: (chunk: string) => void;
+}
+
+const FALLBACK_MODELS = [
+  process.env.GEMINI_MODEL,
+  'gemini-3.1-flash-lite',
+  'gemini-3.6-flash',
+  'gemini-flash-lite-latest',
+  'gemini-3.7-flash',
+  'gemini-3.5-flash'
+].filter(Boolean) as string[];
+
 /**
- * Handle a chat interaction.
- * We manually dispatch tool calls if the model requests them.
+ * Handle a chat interaction with real-time streaming chunks and tool dispatching.
  */
-export async function handleAiChat(
+export async function handleAiChatStream(
   history: ChatMessage[],
   newMessage: string,
-  providedConfirmationToken?: string
+  providedConfirmationToken?: string,
+  callbacks?: StreamCallbacks
 ): Promise<{ text: string; actionRequested?: string }> {
-  
   // Format history for Gemini SDK
   const contents: any[] = history.map(msg => ({
     role: msg.role,
@@ -106,158 +119,197 @@ export async function handleAiChat(
   }));
   contents.push({ role: 'user', parts: [{ text: newMessage }] });
 
-  // Call Gemini
-  let response = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-    contents,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      tools,
-      temperature: 0.1, // low temp for deterministic tool use
-    }
-  });
-
-  // Handle tool calls iteratively
   let maxIterations = 3;
   let iterations = 0;
+  let lastError: any = null;
 
-  while (response.functionCalls && response.functionCalls.length > 0 && iterations < maxIterations) {
-    iterations++;
-    
-    // Append the model's candidate parts to history to retain thought signatures & function calls
-    const modelParts = (response.candidates?.[0]?.content?.parts as any) || response.functionCalls.map(fc => ({ functionCall: fc }));
-    contents.push({
-      role: 'model',
-      parts: modelParts
-    });
+  for (const modelName of FALLBACK_MODELS) {
+    try {
+      iterations = 0;
+      let workingContents = [...contents];
 
-    const toolResponsesParts = [];
+      while (iterations < maxIterations) {
+        iterations++;
 
-    for (const call of response.functionCalls) {
-      const { name, args } = call;
-      const safeArgs: any = args || {};
-      let resultStr = '';
-      let isError = false;
+        // Stream content from Gemini
+        const stream = await ai.models.generateContentStream({
+          model: modelName,
+          contents: workingContents,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            tools,
+            temperature: 0.1,
+          }
+        });
 
-      try {
-        if (name === 'get_loan_schemes') {
-          const schemes = await getActiveSchemes();
-          resultStr = JSON.stringify({ 
-            schemes: schemes.map(s => ({
-              id: s.id,
-              name: s.name,
-              annualInterestRate: parseFloat(s.annualInterestRate.toString()),
-              tenureMonths: s.tenureMonths,
-              maxLtv: parseFloat(s.maxLtv.toString()),
-              repaymentDescription: s.repaymentDescription
-            }))
-          });
-        } 
-        else if (name === 'calculate_quote') {
-          // Validate args using shared schema
-          const parsed = quoteRequestSchema.safeParse(safeArgs);
-          if (!parsed.success) {
-            resultStr = JSON.stringify({ error: "Validation Error", details: parsed.error.errors.map(e => e.message) });
-            isError = true;
-          } else {
-            const schemes = await getActiveSchemes();
-            const quote = calculateGoldQuote(parsed.data.grossWeightGrams, parsed.data.netWeightGrams, parsed.data.karat, schemes);
-            
-            // Format for model (convert paise to rupees)
-            resultStr = JSON.stringify({
-              pureGoldGrams: quote.pureGoldGrams,
-              goldValueRupees: Number(quote.goldValuePaise) / 100,
-              schemes: quote.schemes.map(s => ({
-                schemeId: s.schemeId,
-                schemeName: s.schemeName,
-                eligibleLoanRupees: Number(s.eligibleLoanPaise) / 100,
-                annualInterestRatePercent: s.annualInterestRatePercent
-              }))
-            });
+        let functionCalls: any[] = [];
+        let candidateParts: any[] = [];
+        let streamText = '';
+
+        for await (const chunk of stream) {
+          if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+            functionCalls.push(...chunk.functionCalls);
+          }
+          if (chunk.candidates?.[0]?.content?.parts) {
+            candidateParts.push(...chunk.candidates[0].content.parts);
+          }
+          if (chunk.text) {
+            streamText += chunk.text;
+            callbacks?.onChunk?.(chunk.text);
           }
         }
-        else if (name === 'submit_application') {
-          // MANDATORY SAFETY GATE: Enforce confirmation token
-          if (!providedConfirmationToken || safeArgs.confirmationToken !== providedConfirmationToken) {
-            resultStr = JSON.stringify({
-              error: "Submission Denied",
-              message: "Application cannot be submitted because the user has not explicitly confirmed in the UI."
-            });
-            isError = true;
-          } else {
-            const parsed = createLeadSchema.safeParse(safeArgs);
-            if (!parsed.success) {
-              resultStr = JSON.stringify({ error: "Validation Error", details: parsed.error.errors.map(e => e.message) });
-              isError = true;
-            } else {
-              const scheme = await getActiveSchemes().then(s => s.find(p => p.id === parsed.data.selectedPlanId));
-              if (!scheme) {
-                resultStr = JSON.stringify({ error: "Invalid Scheme", message: "Selected plan does not exist." });
+
+        // If no tool calls were made, we have the complete response
+        if (functionCalls.length === 0) {
+          return { text: streamText };
+        }
+
+        // Tool calls were requested
+        const modelParts = candidateParts.length > 0
+          ? candidateParts
+          : functionCalls.map(fc => ({ functionCall: fc }));
+
+        workingContents.push({
+          role: 'model',
+          parts: modelParts
+        });
+
+        const toolResponsesParts = [];
+
+        for (const call of functionCalls) {
+          const { name, args } = call;
+          const safeArgs: any = args || {};
+          let resultStr = '';
+          let isError = false;
+
+          try {
+            if (name === 'get_loan_schemes') {
+              callbacks?.onStatus?.('Fetching active loan schemes...');
+              const schemes = await getActiveSchemes();
+              resultStr = JSON.stringify({ 
+                schemes: schemes.map(s => ({
+                  id: s.id,
+                  name: s.name,
+                  annualInterestRate: parseFloat(s.annualInterestRate.toString()),
+                  tenureMonths: s.tenureMonths,
+                  maxLtv: parseFloat(s.maxLtv.toString()),
+                  repaymentDescription: s.repaymentDescription
+                }))
+              });
+            } 
+            else if (name === 'calculate_quote') {
+              callbacks?.onStatus?.('Calculating gold valuation and loan quotes...');
+              const parsed = quoteRequestSchema.safeParse(safeArgs);
+              if (!parsed.success) {
+                resultStr = JSON.stringify({ error: "Validation Error", details: parsed.error.errors.map(e => e.message) });
                 isError = true;
               } else {
-                const quote = calculateGoldQuote(parsed.data.grossWeightGrams, parsed.data.netWeightGrams, parsed.data.karat, [scheme]);
-                const q = quote.schemes[0]!;
-                const appId = generateApplicationId();
-                try {
-                  const lead = await createLead({
-                    applicationId: appId,
-                    customerName: parsed.data.customerName,
-                    mobileNumber: parsed.data.mobileNumber,
-                    grossWeightGrams: parsed.data.grossWeightGrams,
-                    netWeightGrams: parsed.data.netWeightGrams,
-                    karat: parsed.data.karat,
-                    schemeId: scheme.id,
-                    pureGoldGrams: q.pureGoldGrams,
-                    goldValuePaise: q.goldValuePaise,
-                    eligibleLoanPaise: q.eligibleLoanPaise,
-                  });
-                  resultStr = JSON.stringify({
-                    success: true,
-                    applicationId: lead.applicationId,
-                    status: lead.status
-                  });
-                } catch (err) {
-                  if (err instanceof DuplicateLeadError) {
-                    resultStr = JSON.stringify({ error: "Duplicate Application", message: err.message, existingApplicationId: err.existingApplicationId });
+                const schemes = await getActiveSchemes();
+                const quote = calculateGoldQuote(parsed.data.grossWeightGrams, parsed.data.netWeightGrams, parsed.data.karat, schemes);
+                
+                resultStr = JSON.stringify({
+                  pureGoldGrams: quote.pureGoldGrams,
+                  goldValueRupees: Number(quote.goldValuePaise) / 100,
+                  schemes: quote.schemes.map(s => ({
+                    schemeId: s.schemeId,
+                    schemeName: s.schemeName,
+                    eligibleLoanRupees: Number(s.eligibleLoanPaise) / 100,
+                    annualInterestRatePercent: s.annualInterestRatePercent
+                  }))
+                });
+              }
+            }
+            else if (name === 'submit_application') {
+              callbacks?.onStatus?.('Submitting your loan application...');
+              if (!providedConfirmationToken || safeArgs.confirmationToken !== providedConfirmationToken) {
+                resultStr = JSON.stringify({
+                  error: "Submission Denied",
+                  message: "Application cannot be submitted because the user has not explicitly confirmed in the UI."
+                });
+                isError = true;
+              } else {
+                const parsed = createLeadSchema.safeParse(safeArgs);
+                if (!parsed.success) {
+                  resultStr = JSON.stringify({ error: "Validation Error", details: parsed.error.errors.map(e => e.message) });
+                  isError = true;
+                } else {
+                  const scheme = await getActiveSchemes().then(s => s.find(p => p.id === parsed.data.selectedPlanId));
+                  if (!scheme) {
+                    resultStr = JSON.stringify({ error: "Invalid Scheme", message: "Selected plan does not exist." });
                     isError = true;
                   } else {
-                    throw err;
+                    const quote = calculateGoldQuote(parsed.data.grossWeightGrams, parsed.data.netWeightGrams, parsed.data.karat, [scheme]);
+                    const q = quote.schemes[0]!;
+                    const appId = generateApplicationId();
+                    try {
+                      const lead = await createLead({
+                        applicationId: appId,
+                        customerName: parsed.data.customerName,
+                        mobileNumber: parsed.data.mobileNumber,
+                        grossWeightGrams: parsed.data.grossWeightGrams,
+                        netWeightGrams: parsed.data.netWeightGrams,
+                        karat: parsed.data.karat,
+                        schemeId: scheme.id,
+                        pureGoldGrams: q.pureGoldGrams,
+                        goldValuePaise: q.goldValuePaise,
+                        eligibleLoanPaise: q.eligibleLoanPaise,
+                      });
+                      resultStr = JSON.stringify({
+                        success: true,
+                        applicationId: lead.applicationId,
+                        status: lead.status
+                      });
+                    } catch (err) {
+                      if (err instanceof DuplicateLeadError) {
+                        resultStr = JSON.stringify({ error: "Duplicate Application", message: err.message, existingApplicationId: err.existingApplicationId });
+                        isError = true;
+                      } else {
+                        throw err;
+                      }
+                    }
                   }
                 }
               }
+            } else {
+              resultStr = JSON.stringify({ error: "Unknown tool call" });
+              isError = true;
             }
+          } catch (e) {
+            resultStr = JSON.stringify({ error: "Internal Error", message: e instanceof Error ? e.message : String(e) });
+            isError = true;
           }
-        } else {
-          resultStr = JSON.stringify({ error: "Unknown tool call" });
-          isError = true;
+
+          toolResponsesParts.push({
+            functionResponse: {
+              name,
+              response: { result: resultStr, isError }
+            }
+          });
         }
-      } catch (e) {
-        resultStr = JSON.stringify({ error: "Internal Error", message: e instanceof Error ? e.message : String(e) });
-        isError = true;
+
+        // Send tool responses back to the model for next loop iteration
+        workingContents.push({ role: 'user', parts: toolResponsesParts });
       }
 
-      toolResponsesParts.push({
-        functionResponse: {
-          name,
-          response: { result: resultStr, isError }
-        }
-      });
+      return { text: '' };
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[AI] Model ${modelName} attempt failed:`, err?.message || err);
+      // Fallback to next model
+      continue;
     }
-
-    // Send tool responses back to the model
-    contents.push({ role: 'user', parts: toolResponsesParts });
-    response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-      contents,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        tools,
-        temperature: 0.1,
-      }
-    });
   }
 
-  return {
-    text: response.text || '',
-  };
+  throw lastError || new Error('All Gemini models failed to respond.');
+}
+
+/**
+ * Handle a chat interaction (non-streaming compatibility wrapper).
+ */
+export async function handleAiChat(
+  history: ChatMessage[],
+  newMessage: string,
+  providedConfirmationToken?: string
+): Promise<{ text: string; actionRequested?: string }> {
+  return handleAiChatStream(history, newMessage, providedConfirmationToken);
 }

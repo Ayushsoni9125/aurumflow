@@ -5,7 +5,8 @@ import apiRouter from './routes/api';
 import { errorMiddleware } from './middleware/errorMiddleware';
 
 // Load environment variables
-dotenv.config({ path: '../.env' }); // Adjust path based on monorepo structure
+dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -16,6 +17,17 @@ app.use(express.json({ limit: '1mb' }));
 
 // Routes
 app.use('/api/v1', apiRouter);
+
+// Root status
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    name: 'AurumFlow API',
+    status: 'online',
+    version: '1.0.0',
+    documentation: '/api/v1',
+    healthCheck: '/health',
+  });
+});
 
 // Health check
 app.get('/health', (_req, res) => {

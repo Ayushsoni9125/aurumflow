@@ -33,16 +33,34 @@ export default function Login() {
         <div className="bg-ivory-100 border border-ivory-200 rounded-lg p-4 mb-6 text-sm text-charcoal-800">
           <div className="flex items-center gap-2 font-semibold text-forest-900 mb-2">
             <Info className="w-4 h-4" />
-            Demo Credentials
+            Demo Credentials (Click to fill)
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="font-medium">Admin:</span>
-              <span className="font-mono text-xs bg-white px-2 py-1 rounded">admin@aurumflow.com / admin</span>
+              <button 
+                type="button"
+                onClick={() => {
+                  setEmail('admin@aurumflow.com');
+                  setPassword('admin');
+                }}
+                className="font-mono text-xs bg-white hover:bg-gold-50 border border-ivory-200 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95"
+              >
+                admin@aurumflow.com / admin
+              </button>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="font-medium">User:</span>
-              <span className="font-mono text-xs bg-white px-2 py-1 rounded">user@aurumflow.com / user</span>
+              <button 
+                type="button"
+                onClick={() => {
+                  setEmail('user@aurumflow.com');
+                  setPassword('user');
+                }}
+                className="font-mono text-xs bg-white hover:bg-gold-50 border border-ivory-200 px-2 py-1 rounded cursor-pointer transition-colors active:scale-95"
+              >
+                user@aurumflow.com / user
+              </button>
             </div>
           </div>
         </div>

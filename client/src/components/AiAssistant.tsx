@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import ReactMarkdown from 'react-markdown';
 import { sendChatMessage, type ChatMessage } from '../api';
 import { MessageSquare, X, Send, Bot, User, Lock, LogIn, UserPlus } from 'lucide-react';
 
@@ -14,7 +15,7 @@ export default function AiAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { 
       role: 'model', 
-      content: `Hi ${userName}! I am your AurumFlow assistant. I can help you explore our gold loan schemes, calculate accurate quotes, or guide you through the application. How can I assist you today?` 
+      content: `Hi **${userName}**! 👋 I am your **AurumFlow AI Assistant**.\n\nI can help you explore our gold loan schemes, calculate accurate quotes, or guide you through your application. How can I help you today?` 
     }
   ]);
   const [input, setInput] = useState('');
@@ -26,7 +27,7 @@ export default function AiAssistant() {
       setMessages([
         { 
           role: 'model', 
-          content: `Hi ${userName}! I am your AurumFlow assistant. I can help you explore our gold loan schemes, calculate accurate quotes, or guide you through the application. How can I assist you today?` 
+          content: `Hi **${userName}**! 👋 I am your **AurumFlow AI Assistant**.\n\nI can help you explore our gold loan schemes, calculate accurate quotes, or guide you through your application. How can I help you today?` 
         }
       ]);
     }
@@ -78,26 +79,33 @@ export default function AiAssistant() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 w-14 h-14 bg-forest-900 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-forest-800 transition-transform ${isOpen ? 'scale-0' : 'scale-100'} z-50`}
+        className={`fixed bottom-6 right-6 w-14 h-14 bg-forest-900 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-forest-800 transition-all hover:scale-105 active:scale-95 ${isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'} z-50 border border-gold-500/30`}
         aria-label="Open AI Assistant"
       >
-        <MessageSquare className="w-6 h-6" />
+        <MessageSquare className="w-6 h-6 text-gold-400" />
       </button>
 
       {/* Chat Window */}
-      <div className={`fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full h-full sm:w-[420px] sm:h-[620px] bg-white sm:rounded-2xl shadow-2xl flex flex-col transition-transform transform origin-bottom-right z-50 border border-ivory-200 ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}>
+      <div className={`fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full h-full sm:w-[440px] sm:h-[620px] bg-white sm:rounded-2xl shadow-2xl flex flex-col transition-all duration-200 transform origin-bottom-right z-50 border border-ivory-300 ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}`}>
         {/* Header */}
-        <div className="bg-forest-900 text-white p-4 sm:rounded-t-2xl flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Bot className="w-6 h-6 text-gold-400" />
+        <div className="bg-forest-900 text-white px-4 py-3.5 sm:rounded-t-2xl flex justify-between items-center shadow-md">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-forest-800 rounded-xl flex items-center justify-center border border-forest-700/60 shadow-inner">
+              <Bot className="w-5 h-5 text-gold-400" />
+            </div>
             <div>
-              <h3 className="font-display font-bold">AurumFlow AI</h3>
-              <p className="text-xs text-forest-200">Gold Loan Assistant</p>
+              <h3 className="font-display font-bold text-sm tracking-tight text-white leading-none">
+                AurumFlow AI
+              </h3>
+              <p className="text-[11px] text-gold-400/90 font-sans mt-0.5">
+                Gold Loan Assistant
+              </p>
             </div>
           </div>
           <button 
             onClick={() => setIsOpen(false)}
-            className="text-forest-200 hover:text-white transition-colors p-1"
+            className="text-forest-200 hover:text-white hover:bg-forest-800/80 p-1.5 rounded-lg transition-colors"
+            aria-label="Close Assistant"
           >
             <X className="w-5 h-5" />
           </button>
@@ -141,20 +149,35 @@ export default function AiAssistant() {
         ) : (
           <>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-ivory-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-ivory-50/70">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-gold-100 text-gold-700' : 'bg-forest-100 text-forest-700'}`}>
-                      {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  <div className={`flex gap-2 max-w-[88%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${msg.role === 'user' ? 'bg-gold-500 text-white shadow-sm' : 'bg-forest-900 text-gold-400 shadow-sm'}`}>
+                      {msg.role === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
                     </div>
-                    <div className={`p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-gold-500 text-white rounded-tr-none' : 'bg-white border border-ivory-200 text-charcoal-900 rounded-tl-none shadow-sm'}`}>
-                      {msg.content.split('\n').map((line, i) => (
-                        <span key={i}>
-                          {line}
-                          <br />
-                        </span>
-                      ))}
+                    <div className={`p-3.5 rounded-2xl ${msg.role === 'user' ? 'bg-gold-500 text-white rounded-tr-none shadow-sm text-[13.5px] leading-relaxed font-sans' : 'bg-white border border-ivory-200/90 text-charcoal-800 rounded-tl-none shadow-sm'}`}>
+                      {msg.role === 'user' ? (
+                        <div>{msg.content}</div>
+                      ) : (
+                        <div className="text-[13.5px] text-charcoal-800 font-sans leading-relaxed">
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed text-charcoal-800 text-[13.5px]">{children}</p>,
+                              strong: ({ children }) => <strong className="font-semibold text-forest-900">{children}</strong>,
+                              ul: ({ children }) => <ul className="space-y-1 my-2 ml-4 list-disc marker:text-gold-500 text-[13.5px]">{children}</ul>,
+                              ol: ({ children }) => <ol className="space-y-1.5 my-2 ml-4 list-decimal marker:text-gold-600 font-medium text-[13.5px]">{children}</ol>,
+                              li: ({ children }) => <li className="leading-relaxed font-normal text-charcoal-800">{children}</li>,
+                              h1: ({ children }) => <h4 className="font-display font-bold text-forest-900 mt-2.5 mb-1 text-sm">{children}</h4>,
+                              h2: ({ children }) => <h4 className="font-display font-bold text-forest-900 mt-2.5 mb-1 text-sm">{children}</h4>,
+                              h3: ({ children }) => <h5 className="font-display font-semibold text-forest-900 mt-2 mb-1 text-[13.5px]">{children}</h5>,
+                              code: ({ children }) => <code className="bg-ivory-200 text-forest-900 px-1 py-0.5 rounded text-xs font-mono">{children}</code>,
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -162,13 +185,13 @@ export default function AiAssistant() {
               {chatMutation.isPending && (
                 <div className="flex justify-start">
                   <div className="flex gap-2 max-w-[85%] flex-row">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-forest-100 text-forest-700">
-                      <Bot className="w-4 h-4" />
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-forest-900 text-gold-400 mt-0.5">
+                      <Bot className="w-3.5 h-3.5" />
                     </div>
-                    <div className="p-4 rounded-2xl bg-white border border-ivory-200 text-charcoal-900 rounded-tl-none shadow-sm flex items-center gap-2">
-                      <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                      <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                      <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <div className="px-4 py-3 rounded-2xl bg-white border border-ivory-200 text-charcoal-900 rounded-tl-none shadow-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 bg-gold-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                      <span className="w-2 h-2 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                      <span className="w-2 h-2 bg-gold-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                     </div>
                   </div>
                 </div>
@@ -177,20 +200,21 @@ export default function AiAssistant() {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-white border-t border-ivory-200 sm:rounded-b-2xl">
-              <form onSubmit={handleSend} className="flex gap-2">
+            <div className="p-3.5 bg-white border-t border-ivory-200/90 sm:rounded-b-2xl">
+              <form onSubmit={handleSend} className="flex items-center gap-2">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask about our loan schemes or calculate quotes..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm bg-ivory-50"
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-gold-500 text-[13.5px] bg-ivory-50/70 placeholder:text-charcoal-400"
                   disabled={chatMutation.isPending}
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || chatMutation.isPending}
-                  className="bg-gold-500 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-gold-600 disabled:opacity-50 transition-colors flex-shrink-0"
+                  className="bg-gold-500 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-gold-600 disabled:opacity-40 transition-colors flex-shrink-0 shadow-sm"
+                  aria-label="Send message"
                 >
                   <Send className="w-4 h-4 ml-[-2px]" />
                 </button>

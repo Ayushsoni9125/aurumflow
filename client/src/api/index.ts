@@ -9,6 +9,15 @@ export const apiClient = axios.create({
   },
 });
 
+// Automatically inject JWT Bearer token into all outgoing requests
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Types
 export interface Scheme {
   id: string;
@@ -108,11 +117,17 @@ export const sendChatMessageStream = async (
   payload: ChatRequest,
   handlers?: StreamHandlers
 ): Promise<string> => {
+  const token = localStorage.getItem('token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}/chat/stream`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(payload),
     signal: handlers?.signal,
   });

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import prisma from '../repositories/prismaClient';
+import { generateToken } from '../utils/jwt';
 import { sendSuccess, sendError, zodErrorToFields } from '../utils/apiResponse';
 
 const SALT_ROUNDS = 10;
@@ -49,7 +50,24 @@ export async function registerController(
       },
     });
 
-    sendSuccess(res, { id: user.id, name: user.name, email: user.email, role: user.role }, 201);
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    });
+
+    sendSuccess(
+      res,
+      {
+        token,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      201
+    );
   } catch (err) {
     next(err);
   }
@@ -93,7 +111,24 @@ export async function loginController(
       return;
     }
 
-    sendSuccess(res, { id: user.id, name: user.name, email: user.email, role: user.role }, 200);
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    });
+
+    sendSuccess(
+      res,
+      {
+        token,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      200
+    );
   } catch (err) {
     next(err);
   }

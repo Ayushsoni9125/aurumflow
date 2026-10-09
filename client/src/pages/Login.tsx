@@ -14,6 +14,9 @@ export default function Login() {
     mutationFn: loginUser,
     onSuccess: (data) => {
       localStorage.setItem('isAuthenticated', 'true');
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       localStorage.setItem('userRole', data.role);
       localStorage.setItem('userId', data.id);
       localStorage.setItem('userName', data.name || email.split('@')[0]);
@@ -27,25 +30,6 @@ export default function Login() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Hardcoded demo check for quick access without DB setup for reviewers
-    if (email === 'admin@aurumflow.com' && password === 'admin') {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', 'admin');
-      localStorage.setItem('userId', 'demo-admin-id');
-      localStorage.setItem('userName', 'Admin');
-      navigate('/admin');
-      return;
-    } 
-    if (email === 'user@aurumflow.com' && password === 'user') {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', 'user');
-      localStorage.setItem('userId', 'demo-user-id');
-      localStorage.setItem('userName', 'User');
-      navigate('/apply');
-      return;
-    }
-
     loginMutation.mutate({ email, password });
   };
 

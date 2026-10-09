@@ -47,6 +47,8 @@ export async function createLeadController(
       userId,
     } = parsed.data;
 
+    const effectiveUserId = (req as any).user?.id || userId;
+
     // Validate the plan
     const scheme = await getActiveSchemeById(selectedPlanId);
     if (!scheme) {
@@ -75,7 +77,7 @@ export async function createLeadController(
         netWeightGrams,
         karat,
         schemeId: selectedPlanId,
-        userId,
+        userId: effectiveUserId,
         pureGoldGrams: schemeQuote.pureGoldGrams,
         goldValuePaise: schemeQuote.goldValuePaise,
         eligibleLoanPaise: schemeQuote.eligibleLoanPaise,

@@ -15,8 +15,12 @@ export default function Signup() {
     mutationFn: registerUser,
     onSuccess: (data) => {
       localStorage.setItem('isAuthenticated', 'true');
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       localStorage.setItem('userRole', data.role);
       localStorage.setItem('userId', data.id);
+      localStorage.setItem('userName', data.name || name);
       navigate('/apply');
     },
     onError: (err: any) => {

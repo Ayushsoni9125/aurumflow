@@ -24,6 +24,7 @@ export default function Header() {
   }, [location]);
 
   const handleSignOut = () => {
+    localStorage.removeItem('token');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');

@@ -10,10 +10,7 @@ export default function LandingPage() {
           <div className="w-[800px] h-[500px] bg-gold-400/10 blur-[120px] rounded-full absolute -top-20"></div>
         </div>
         
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ivory-200 text-gold-600 text-sm font-semibold mb-8">
-          <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse"></span>
-          Smarter gold lending, powered by AI
-        </div>
+
         
         <h1 className="text-5xl md:text-7xl font-display font-bold text-forest-900 tracking-tight leading-tight max-w-4xl mb-6">
           Unlock the true value of your gold, <span className="text-gold-500 italic">instantly.</span>

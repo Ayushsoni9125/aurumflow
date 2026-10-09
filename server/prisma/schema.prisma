@@ -1,0 +1,59 @@
+// This is your Prisma schema file for AurumFlow
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model LoanScheme {
+  id                  String  @id
+  name                String
+  annualInterestRate  Decimal @db.Decimal(5, 4)
+  tenureMonths        Int
+  maxLtv              Decimal @db.Decimal(5, 4)
+  repaymentDescription String
+  isActive            Boolean @default(true)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  leads Lead[]
+
+  @@map("loan_schemes")
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  applicationId   String   @unique @map("application_id")
+  customerName    String   @map("customer_name")
+  mobileNumber    String   @map("mobile_number")
+  grossWeightGrams Decimal @db.Decimal(8, 3) @map("gross_weight_grams")
+  netWeightGrams  Decimal  @db.Decimal(8, 3) @map("net_weight_grams")
+  karat           Int
+  schemeId        String   @map("scheme_id")
+  pureGoldGrams   Decimal  @db.Decimal(10, 4) @map("pure_gold_grams")
+  goldValuePaise  BigInt   @map("gold_value_paise")
+  eligibleLoanPaise BigInt @map("eligible_loan_paise")
+  status          LeadStatus @default(SUBMITTED)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  scheme          LoanScheme @relation(fields: [schemeId], references: [id])
+
+  @@index([mobileNumber, createdAt])
+  @@index([createdAt(sort: Desc)])
+  @@index([schemeId])
+  @@map("leads")
+}
+
+enum LeadStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  DISBURSED
+}

@@ -133,7 +133,7 @@ export default function ApplicationFlow() {
           </p>
           <div className="flex gap-4">
             <button onClick={() => navigate('/track')} className="btn-primary w-full">
-              Track Application
+              My Applications
             </button>
             <button onClick={() => window.location.reload()} className="btn-secondary w-full whitespace-nowrap">
               Start New

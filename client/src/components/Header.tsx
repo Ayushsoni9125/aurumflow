@@ -51,7 +51,7 @@ export default function Header() {
                   to="/track" 
                   className={`text-sm font-medium transition-colors ${location.pathname === '/track' ? 'text-gold-600' : 'text-charcoal-800 hover:text-gold-500'}`}
                 >
-                  Track Status
+                  My Applications
                 </Link>
                 
                 {userRole === 'admin' && (

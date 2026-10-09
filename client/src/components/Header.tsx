@@ -20,9 +20,11 @@ export default function Header() {
   const handleSignOut = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
     setIsAuthenticated(false);
     setUserRole('user');
-    navigate('/');
+    navigate('/login');
   };
 
   return (

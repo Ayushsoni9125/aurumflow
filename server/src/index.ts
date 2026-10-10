@@ -48,7 +48,29 @@ app.use((_req, res) => {
 // Central error handler
 app.use(errorMiddleware);
 
+// Keep-alive mechanism for Render free tier (pings every 10 minutes)
+function startKeepAlive() {
+  const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || 'https://aurumflow-server.onrender.com';
+  const PING_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+    console.log(`⏱️ Keep-alive cron initialized for ${BACKEND_URL}/health`);
+    setInterval(() => {
+      fetch(`${BACKEND_URL}/health`)
+        .then((res) => {
+          if (res.ok) {
+            console.log(`💓 [Keep-Alive] Ping successful at ${new Date().toISOString()}`);
+          }
+        })
+        .catch((err) => {
+          console.warn(`⚠️ [Keep-Alive] Ping failed:`, err.message);
+        });
+    }, PING_INTERVAL_MS);
+  }
+}
+
 // Start server
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
+  startKeepAlive();
 });

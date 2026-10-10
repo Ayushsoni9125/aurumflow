@@ -1,0 +1,22 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free-tier spin-down
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend Health Endpoint
+        run: |
+          echo "Pinging AurumFlow backend..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://aurumflow-server.onrender.com/health)
+          echo "HTTP Status: $RESPONSE"
+          if [ "$RESPONSE" -eq 200 ]; then
+            echo "✅ Backend is warm and active."
+          else
+            echo "⚠️ Backend returned status $RESPONSE"
+          fi
